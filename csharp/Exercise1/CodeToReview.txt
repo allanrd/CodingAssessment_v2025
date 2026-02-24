@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+// The following two namespaces arent used in the code and should be removed in order to keep the code clean and easy to read.
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Review
+namespace Review    // The namespace can be inlined to the file as there is only one class in this file. This will make the code slightly easier to read and navigate.
 {
-    public class People
+    public class People   // The name of this class should be singular (Person) as it represents a single person, not multiple people.
+                          // This will make the code easier to understand and follow.
     {
         private static readonly DateTimeOffset Under16 = DateTimeOffset.UtcNow.AddYears(-15);
         public string Name { get; private set; }
@@ -14,6 +17,9 @@ namespace Review
 
         public People(string name) : this(name, Under16.Date) { }
 
+        // The signature of this constructor allows a DateTime object to be passed in, but the DOB property is a DateTimeOffset object.
+        // This can lead to confusion and potential bugs.
+        // It would be better to require a DateTimeOffset object to match the property type
         public People(string name, DateTime dob)
         {
             Name = name;
@@ -23,14 +29,21 @@ namespace Review
 
     public class BirthingUnit
     {
+        // Are these comments related to some code that was removed? If not, they should be removed.
+
         /// <summary>
         /// MaxItemsToRetrieve
         /// </summary>
         private List<People> _people;
 
-        public BirthingUnit() {
+        public BirthingUnit()
+        {
             _people = new List<People>();
         }
+
+        // Triple-slash comments for the GetPeople method is incorrect and do not provide any useful information about purpose or behavior.
+        // The comments are used in Intellisense and other documentation tools to help us understand the code,
+        // so it is important to provide accurate and informative comments.
 
         /// <summary>
         /// GetPeoples
@@ -39,41 +52,80 @@ namespace Review
         /// <returns>List<object></returns>
         public List<People> GetPeople(int i)
         {
-            for (int j = 0; j < i; j++) {
+            for (int j = 0; j < i; j++)
+            {
                 try
                 {
                     // Creates a dandon Name
                     string name = string.Empty;
-                    var random = new Random();
-                    if (random.Next(0, 1) == 0) {
+                    var random = new Random();          // The Random class is not thread-safe, and creating a new instance of it in a loop can lead to issues with randomness and performance.
+                                                        // It would be better to create a single instance of the Random class outside of the loop and reuse it for generating random numbers.
+                    if (random.Next(0, 1) == 0)
+                    {
                         name = "Bob";
                     }
                     else { name = "Betty"; }
                     // Adds new people to the list
                     _people.Add(new People(name, DateTime.UtcNow.Subtract(new TimeSpan(random.Next(18, 85) * 356, 0, 0, 0))));
                 }
+
+                // When we catch exceptions, we need to be as specific as possible about the type of exception we are catching.
+                // Catching a general Exception can hide other issues and make debugging more difficult.
+                // In this case, we can catch specific exceptions that we expect to occur during the creation of a new People object,
+                // such as ArgumentNullException or ArgumentOutOfRangeException.
                 catch (Exception e)
+                // The variable 'e' is not used in the catch block, which can lead to confusion and make it harder to understand the code.
+                // It likely should be used to log the exception or provide more information about the error that occurred.
                 {
                     // Dont think this should ever happen
                     throw new Exception("Something failed in user creation");
+                    // Throwing a new exception here can hide the original exception and make it harder to debug the issue.
+                    // Consider rethrowing the original exception or including it as an inner exception to preserve the original error information.
                 }
             }
             return _people;
         }
 
-        private IEnumerable<People> GetBobs(bool olderThan30) {
+
+        // The GetBobs method is not used anywhere in the code, and should be removed if it is not needed.
+        // Unused code can clutter the codebase and make it harder to maintain and understand.
+        private IEnumerable<People> GetBobs(bool olderThan30)
+        {
             return olderThan30 ? _people.Where(x => x.Name == "Bob" && x.DOB >= DateTime.Now.Subtract(new TimeSpan(30 * 356, 0, 0, 0))) : _people.Where(x => x.Name == "Bob");
         }
 
+        // Its unclear why this method is placed withing this class, as it does not seem to be related to the functionality of the BirthingUnit class.
         public string GetMarried(People p, string lastName)
         {
-            if (lastName.Contains("test"))
+            // The GetMarried method has some issues with its logic and implementation
+
+            //Is this conditional left over from developer testing? It's important to take the time to clean up any test code or debugging code before committing changes to the codebase,
+            //as it introduces bugs, and can lead to confusion and make the code harder to understand for other developers.
+            if (lastName.Contains("test"))                 
                 return p.Name;
-            if ((p.Name.Length + lastName).Length > 255) {
+
+            // This if statement is checking the length of the person's name and the last name, but it is not correctly calculating the total length of the full name,
+            // which includes a space between the first name and last name.
+            if ((p.Name.Length + lastName).Length > 255)
+            {
+                // The result of the call to Substring is not being returned or assigned to a variable, which means that it can not have any effect on the output of the method.
                 (p.Name + " " + lastName).Substring(0, 255);
             }
 
+            // The return value is unvalidated and could potentially exceed the maximum length of 255 characters,
+            // which could lead to issues with data storage and processing.
             return p.Name + " " + lastName;
         }
     }
 }
+
+// REFLECTIONS:
+// More significant than any one "code smell" and what concerns me most is the fact that it looks unfinshed - like a work in progress. There are control structures that appear related to
+// developer testing, triple-slash comments that don't match code, methods without references, and several other issues that would result in quality and maintainability issues if this code were to be used in a production environment.
+// It is crucial to clean up and refactor code before it is used in a production environment. It can lead to bugs that have a real world impact on those in need, can cause performance issues and make it harder for other developers to understand and maintain the code.
+//
+// QUESTIONS FOR THE DEVELOPER:
+// 1. Please help me understand the purpose of the GetPeople method. It deviates from the standard convention of returning a list of people based on some criteria,
+// and instead generates random people and adds them to a list. What is the intended use case for this method, and how does it fit into the overall functionality of the BirthingUnit class?
+// 2. What is the purpose of the GetMarried method, and how does it relate to the functionality of the BirthingUnit class?
+// 
