@@ -31,14 +31,15 @@ public class PeopleTests
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
+    [InlineData(50)]
     public void BirthingUnit_GetPeople_Should_Return_Correct_Type(int numberOfPeopleToCreate)
     {
         // Arrange
-        var birthingUnit = new BirthingUnit();
+        var birthingUnit = new BirthingUnit(new FakeRepository());
         // Act
         var people = birthingUnit.GetPeople(numberOfPeopleToCreate);
         // Assert
-        Assert.IsType<List<Person>>(people);
+        Assert.IsType<IEnumerable<Person>>(people, exactMatch: false);
     }
 
     [Theory]
@@ -48,10 +49,49 @@ public class PeopleTests
     public void BirthingUnit_GetPeople_Should_Return_Correct_Number_Of_People(int numberOfPeopleToCreate)
     {
         // Arrange
-        var birthingUnit = new BirthingUnit();
+        var birthingUnit = new BirthingUnit(new FakeRepository());
         // Act
         var people = birthingUnit.GetPeople(numberOfPeopleToCreate);
         // Assert
-        Assert.Equal(numberOfPeopleToCreate, people.Count);
+        Assert.Equal(numberOfPeopleToCreate, people.Count());
     }
+}
+public class FakeRepository : IRepository
+{
+    private List<Person> _people = new List<Person>();
+    public void AddPerson(Person person)
+    {
+        _people.Add(person);
+    }
+    public IEnumerable<Person> GetPeople(int maxItemsToRetrieve)
+    {
+        FakePeople(maxItemsToRetrieve);
+        return _people.Take(maxItemsToRetrieve);
+    }
+    private void FakePeople(int maxItemsToRetrieve)
+    {
+        while (_people.Count < maxItemsToRetrieve)
+        {
+            try
+            {
+                // Creates a dandon Name
+                string name = string.Empty;
+                var random = new Random();
+                if (random.Next(0, 1) == 0)
+                {
+                    name = "Bob";
+                }
+                else { name = "Betty"; }
+                // Adds new people to the list
+                AddPerson(new Person(name, DateTimeOffset.UtcNow.Subtract(new TimeSpan(random.Next(18, 85) * 356, 0, 0, 0))));
+            }
+            catch (Exception e)
+            {
+                // Dont think this should ever happen
+                throw new Exception("Something failed in user creation");
+            }
+
+        }
+    }
+
 }
