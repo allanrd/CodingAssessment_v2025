@@ -11,7 +11,7 @@ public class PeopleTests
         string name = "Alice";
         DateTime dob = DateTime.MaxValue;
         // Act
-        var person = new People(name, dob);
+        var person = new Person(name, dob);
         // Assert
         Assert.Equal(name, person.Name);
         Assert.Equal(dob, person.DOB);
@@ -23,7 +23,7 @@ public class PeopleTests
         // Arrange
         string name = "Charlie";
         // Act
-        var person = new People(name);
+        var person = new Person(name);
         // Assert
         Assert.Equal(name, person.Name);
         Assert.True(person.DOB <= DateTimeOffset.UtcNow.AddYears(-15));
@@ -38,7 +38,7 @@ public class PeopleTests
         // Act
         var people = birthingUnit.GetPeople(numberOfPeopleToCreate);
         // Assert
-        Assert.IsType<List<People>>(people);
+        Assert.IsType<List<Person>>(people);
     }
 
     [Theory]
