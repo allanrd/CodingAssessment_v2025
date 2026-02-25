@@ -1,0 +1,117 @@
+Exercise 3 - Greenfields Project
+
+As an enthusiastic card player and developer
+I want to create a program to play cards against the computer
+So that when I am bored I can play against an intelligent opponent.
+
+Initial ToDo List:
+1. Evaluate various technology stacks and dev environments to select one that is in line with developer skills, learning goals,
+   and general project requirements.
+2. Decide upon the various components of the project and how they will interact with each other. In this example the Deck, Cards, 
+   and associated basic functionality that is shared across card games will be implemented as a library.
+   The game logic and various types of user interface will be implemented separate projects that reference the library.
+3. Design CI/CD pipelines along with versioning strategies to allow work to be deployed and available for consumption asap via a configured private NuGet feed,
+   after passing automated unit tests and other quality checks. 
+4. Implement the logic using TDD to ensure that the code is well-structured, maintainable, adheres to best practices, and does what it is expected to.
+5. Based on developer capacity and emerging requirements, expose a coherent development pipeline to keep track of overall progress.
+
+Architecture Design Record:
+Title: ADR1: Data Structures for Card Management within the Library
+Context:  In order to keep game logic code clean and focused on the rules of the game rather than the mechanics of managing a
+deck of cards, we need to move as much of this details into the library. This will also allow us to reuse the same code across
+multiple games.
+Decision: We will expose cards that haven't been dealt as a FIFO Queue, and expose dealt cards as an Enumeration.
+Status: Accepted
+Consequences: This will allow us to easily manage the state of the deck and the cards that have been dealt, while also providing a clear interface for the game 
+logic to interact with the library. It will also allow us to easily implement features such as shuffling the deck and dealing cards in a way that is consistent 
+across all games that use the library.
+
+Scaffolding (NOTE: I'VE RUN OUT OF TIME TO CREATE ANY OF THE THREE IMPORTANT DIAGRAMS IN THE C4 MODEL, SO IVE JUST LAID OUT
+THE BASIC FUNCTIONALITY OF THE LIBRARY IN ROUGH CODE)
+
+public abstract class Card
+{
+    public string Id { get; init; }
+    public string Text { get; init; }
+    internal Card(string text)
+    {
+        Text = text;
+        Id = Guid.NewGuid().ToString();
+    }
+}
+
+
+public class WesternCard : Card
+{
+    public WesternCard(Suit suit, Rank rank) : base(rank + " of " + suit)
+    {
+       Suit = suit;
+       Rank = rank;
+    }
+    public Suit Suit { get; init; }
+    public Rank Rank { get; init; }
+}
+
+
+public enum Suit {
+    Hearts,
+    Diamonds,
+    Clubs,
+    Spades
+}
+
+
+public enum Rank {
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+    Jack,
+    Queen,
+    King,
+    Ace
+}
+
+
+public class Deck
+{
+    public static IEnumerable<WesternCard> WesternDeck
+    {
+        get
+        {
+            IEnumerable<WesternCard> cards = new List<WesternCard>()
+            {
+                new (Suit.Hearts, Rank.Two),
+                new (Suit.Diamonds, Rank.Two),
+                new (Suit.Clubs, Rank.Two),.....
+
+
+public class GameDeck
+{
+    private readonly Queue<Card> _cards;
+    private readonly IEnumerable<Card> _dealtCards;
+    public GameDeck(IEnumerable<Card> cards)
+    {
+        _cards = new (Deck.WesternDeck);
+        _dealtCards = new List<WesternDeck>();
+    }
+    public IEnumerable<Card> DealtCards => _dealtCards.AsReadOnly();
+    public Card DealCard()
+    {
+        if (_cards.Count == 0) throw new InvalidOperationException("No more cards to deal.");
+        var card = _cards.Dequeue();
+        _dealtCards.Add(card);
+        return card;
+    }
+    public void ReturnCard(Card card)
+    {
+        if (!_dealtCards.Contains(card)) throw new InvalidOperationException("Card not in dealt cards.");
+        _dealtCards.Remove(card);
+        _cards.Enqueue(card);
+    }
+}
